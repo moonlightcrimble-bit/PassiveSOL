@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PassiveSOL — Hold $PASSIVESOL, earn $USDC</title>
+<meta name="description" content="A fixed share of every $PASSIVESOL trade is converted to $USDC and streamed to holders' Solana wallets — automatically, on-chain, forever.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #FF0000;
+    --red-dim: #CC0000;
+    --red-glow: rgba(255,0,0,0.15);
+    --red-border: rgba(255,0,0,0.3);
+    --black: #000000;
+    --gray-900: #0a0a0a;
+    --gray-800: #111111;
+    --gray-700: #1a1a1a;
+    --gray-600: #222222;
+    --gray-400: #666666;
+    --gray-300: #888888;
+    --white: #ffffff;
+    --font-display: 'Orbitron', monospace;
+    --font-mono: 'Space Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* SCAN LINE EFFECT */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* GRID BACKGROUND */
+  .grid-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(255,0,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,0,0,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,0,0,0.2);
+    padding: 0 3rem;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--red);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .logo-icon::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--white);
+    text-decoration: none;
+  }
+
+  .logo-text span { color: var(--red); }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--gray-300);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--red); }
+
+  .nav-links a.x-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-links a.x-link svg { width: 14px; height: 14px; fill: currentColor; }
+
+  .btn-launch {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.1s;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  }
+
+  .btn-launch:hover { background: var(--red-dim); transform: translateY(-1px); }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 2rem 80px;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse at center, rgba(255,0,0,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .ticker-badge {
+    display: inline-block;
+    border: 1px solid var(--red-border);
+    padding: 6px 18px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--red);
+    margin-bottom: 2rem;
+    animation: pulse-border 2s infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { border-color: rgba(255,0,0,0.3); }
+    50% { border-color: rgba(255,0,0,0.8); }
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.8rem, 7vw, 6rem);
+    font-weight: 900;
+    letter-spacing: 4px;
+    line-height: 1.05;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  .hero h1 .accent { color: var(--red); }
+
+  .hero-subtitle {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--gray-400);
+    letter-spacing: 2px;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+  }
+
+  .hero-desc {
+    max-width: 560px;
+    font-size: 16px;
+    color: var(--gray-300);
+    line-height: 1.8;
+    margin: 0 auto 3rem;
+  }
+
+  .hero-desc strong { color: var(--white); font-weight: 500; }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 14px 36px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  }
+
+  .btn-primary:hover {
+    background: var(--red-dim);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255,0,0,0.3);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--white);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 14px 36px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-secondary:hover { border-color: var(--red); color: var(--red); }
+
+  /* STATS BAR */
+  .stats-bar {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(255,0,0,0.15);
+    border-bottom: 1px solid rgba(255,0,0,0.15);
+    background: rgba(255,0,0,0.03);
+    padding: 1.5rem 4rem;
+    display: flex;
+    justify-content: center;
+    gap: 6rem;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--red);
+    display: block;
+  }
+
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--gray-400);
+    text-transform: uppercase;
+  }
+
+  /* SECTIONS */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 6rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: var(--red);
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  .section-title .accent { color: var(--red); }
+
+  .section-body {
+    color: var(--gray-300);
+    font-size: 16px;
+    max-width: 600px;
+    line-height: 1.8;
+  }
+
+  /* ABOUT */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    margin-top: 3rem;
+  }
+
+  .about-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .about-card {
+    border: 1px solid rgba(255,0,0,0.2);
+    background: rgba(255,0,0,0.03);
+    padding: 1.25rem 1.5rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .about-card:hover {
+    border-color: rgba(255,0,0,0.5);
+    background: rgba(255,0,0,0.06);
+  }
+
+  .about-card-icon {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  .about-card h3 {
+    font-family: var(--font-display);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .about-card p {
+    font-size: 13px;
+    color: var(--gray-400);
+    line-height: 1.6;
+  }
+
+  /* HOW IT WORKS */
+  .hiw-full {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 6rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    margin-top: 3rem;
+    border: 1px solid rgba(255,0,0,0.2);
+  }
+
+  .step {
+    padding: 2rem 1.5rem;
+    border-right: 1px solid rgba(255,0,0,0.2);
+    position: relative;
+    background: rgba(0,0,0,0.5);
+    transition: background 0.2s;
+  }
+
+  .step:last-child { border-right: none; }
+
+  .step:hover { background: rgba(255,0,0,0.04); }
+
+  .step-num {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 900;
+    color: rgba(255,0,0,0.15);
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+
+  .step h3 {
+    font-family: var(--font-display);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .step p {
+    font-size: 13px;
+    color: var(--gray-400);
+    line-height: 1.7;
+  }
+
+  /* TOKENOMICS */
+  .tokenomics-full {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 6rem 4rem;
+    position: relative;
+    z-index: 1;
+    background: rgba(255,0,0,0.02);
+    border-top: 1px solid rgba(255,0,0,0.1);
+    border-bottom: 1px solid rgba(255,0,0,0.1);
+  }
+
+  .tokenomics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-top: 3rem;
+    align-items: start;
+  }
+
+  .token-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .token-table tr {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .token-table td {
+    padding: 14px 0;
+    font-size: 13px;
+  }
+
+  .token-table td:first-child {
+    color: var(--gray-400);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .token-table td:last-child {
+    color: var(--white);
+    font-weight: 500;
+    text-align: right;
+  }
+
+  .token-bar-container { margin-top: 1rem; }
+
+  .token-bar-item {
+    margin-bottom: 1.25rem;
+  }
+
+  .token-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--gray-400);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .token-bar-label span:last-child { color: var(--white); }
+
+  .token-bar-track {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    width: 100%;
+  }
+
+  .token-bar-fill {
+    height: 100%;
+    background: var(--red);
+    transition: width 1s ease;
+  }
+
+  /* DIVIDER */
+  .divider {
+    position: relative;
+    z-index: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,0,0,0.3) 50%, transparent);
+    margin: 0;
+  }
+
+  /* APP SECTION */
+  .app-section {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 6rem 4rem;
+  }
+
+  .app-mockup {
+    margin-top: 3rem;
+    border: 1px solid rgba(255,0,0,0.3);
+    background: var(--gray-900);
+    overflow: hidden;
+  }
+
+  .app-nav {
+    background: rgba(0,0,0,0.8);
+    border-bottom: 1px solid rgba(255,0,0,0.2);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .app-nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+
+  .app-nav-logo .mini-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--red);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 900;
+    color: white;
+  }
+
+  .app-nav-tabs {
+    display: flex;
+    gap: 0;
+    height: 100%;
+    align-items: stretch;
+  }
+
+  .app-nav-tab {
+    padding: 0 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    border-bottom: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .app-nav-tab.active { color: var(--red); border-bottom-color: var(--red); }
+  .app-nav-tab:hover:not(.active) { color: var(--white); }
+
+  .app-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .app-token-display {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--gray-400);
+    letter-spacing: 1px;
+  }
+
+  .app-connect-btn {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+  }
+
+  .app-body {
+    padding: 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .app-dashboard-center {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    border: 1px dashed rgba(255,0,0,0.2);
+    text-align: center;
+  }
+
+  .app-asterisk {
+    font-size: 3rem;
+    color: rgba(255,0,0,0.4);
+    margin-bottom: 1.5rem;
+    animation: spin-slow 8s linear infinite;
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .app-dashboard-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+
+  .app-dashboard-desc {
+    font-size: 13px;
+    color: var(--gray-400);
+    max-width: 480px;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  .app-wallet-input {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--gray-400);
+    padding: 12px 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .app-wallet-input:focus {
+    border-color: rgba(255,0,0,0.4);
+    color: var(--white);
+  }
+
+  .app-wallet-input::placeholder { color: rgba(255,255,255,0.2); }
+
+  /* CA BANNER */
+  .ca-banner {
+    position: relative;
+    z-index: 1;
+    background: rgba(255,0,0,0.08);
+    border-top: 1px solid rgba(255,0,0,0.3);
+    padding: 0.75rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+
+  .ca-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--red);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .ca-address {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--gray-300);
+    letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 500px;
+  }
+
+  .ca-copy {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 6px 16px;
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+
+  .ca-copy:hover { background: var(--red-dim); }
+
+  /* FOOTER */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(255,0,0,0.15);
+    padding: 3rem 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  footer .logo-text {
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: 3px;
+    font-weight: 700;
+  }
+
+  footer .footer-right {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--gray-400);
+    letter-spacing: 1px;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero > * {
+    animation: fadeInUp 0.7s ease both;
+  }
+
+  .hero > *:nth-child(1) { animation-delay: 0.1s; }
+  .hero > *:nth-child(2) { animation-delay: 0.2s; }
+  .hero > *:nth-child(3) { animation-delay: 0.3s; }
+  .hero > *:nth-child(4) { animation-delay: 0.4s; }
+  .hero > *:nth-child(5) { animation-delay: 0.5s; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav { padding: 0 1.5rem; }
+    .nav-links { gap: 1rem; }
+    section, .hiw-full, .tokenomics-full, .app-section { padding: 4rem 1.5rem; }
+    .about-grid, .tokenomics-grid, .app-body { grid-template-columns: 1fr; gap: 2rem; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .step { border-right: none; border-bottom: 1px solid rgba(255,0,0,0.2); }
+    .step:last-child { border-bottom: none; }
+    .stats-bar { gap: 2rem; padding: 1.5rem 1.5rem; }
+    .ca-banner { padding: 1rem 1.5rem; gap: 1rem; }
+    footer { padding: 2rem 1.5rem; }
+    .app-body { grid-column: 1; }
+    .app-dashboard-center { grid-column: 1; }
+  }
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--gray-900);
+    border: 1px solid rgba(255,0,0,0.4);
+    padding: 3rem 2.5rem;
+    max-width: 440px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    animation: fadeInUp 0.3s ease both;
+  }
+
+  .modal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--red);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    background: none;
+    border: none;
+    color: var(--gray-400);
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .modal-close:hover { color: var(--white); }
+
+  .modal-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1.25rem;
+    animation: spin-slow 8s linear infinite;
+    display: inline-block;
+    color: var(--red);
+  }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 0.75rem;
+  }
+
+  .modal-desc {
+    font-size: 14px;
+    color: var(--gray-400);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+
+  .modal-desc strong { color: var(--white); }
+
+  .modal-x-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--red);
+    color: white;
+    text-decoration: none;
+    padding: 13px 28px;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  }
+
+  .modal-x-btn:hover {
+    background: var(--red-dim);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255,0,0,0.3);
+  }
+
+  .modal-x-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+  .modal-note {
+    margin-top: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.2);
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 36 36" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+        <rect width="36" height="36" rx="8" fill="#FF0000"/>
+        <text x="4" y="26" font-family="Arial Black,Arial" font-weight="900" font-size="18" fill="white" letter-spacing="-1">PS</text>
+        <line x1="4" y1="29" x2="32" y2="29" stroke="white" stroke-width="1.5" stroke-opacity="0.5"/>
+      </svg>
+    </div>
+    <span class="logo-text">Passive<span>SOL</span></span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="https://x.com/passivesol" target="_blank" class="x-link">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.736l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      X / Twitter
+    </a></li>
+    <li><a href="#app" class="btn-launch">Launch App</a></li>
+  </ul>
+</nav>
+
+<!-- CA BANNER -->
+<div class="ca-banner" style="margin-top:64px;">
+  <span class="ca-label">$PASSIVESOL CA</span>
+  <span class="ca-address" id="ca-addr">Coming soon — contract address will appear here at launch</span>
+  <button class="ca-copy" onclick="copyCA()">Copy</button>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-glow"></div>
+  <span class="ticker-badge">$PASSIVESOL · SOLANA · USDC REWARDS</span>
+  <h1><span class="accent">Passive</span> Income<br>On Autopilot</h1>
+  <p class="hero-subtitle">Passive income · On-chain · Every 15 minutes</p>
+  <p class="hero-desc">
+    A fixed share of every <strong>$PASSIVESOL</strong> trade is converted to <strong>$USDC</strong>
+    and streamed directly to holders' Solana wallets — automatically, on-chain, forever.
+  </p>
+  <div class="hero-cta">
+    <a href="#app" class="btn-primary">Launch App</a>
+    <a href="#how" class="btn-secondary">How It Works</a>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat">
+    <span class="stat-value">15min</span>
+    <span class="stat-label">USDC payout interval</span>
+  </div>
+  <div class="stat">
+    <span class="stat-value">100%</span>
+    <span class="stat-label">on-chain, automatic</span>
+  </div>
+  <div class="stat">
+    <span class="stat-value">∞</span>
+    <span class="stat-label">Passive income, forever</span>
+  </div>
+  <div class="stat">
+    <span class="stat-value">SOL</span>
+    <span class="stat-label">Powered by Solana</span>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-label">About</div>
+  <h2 class="section-title">What Is <span class="accent">PassiveSOL?</span></h2>
+  <div class="about-grid">
+    <div>
+      <p class="section-body">
+        PassiveSOL is a Solana-native token designed around one idea: your wallet should work for you.
+        Every trade generates real $USDC rewards, streamed on-chain to every holder automatically —
+        no staking, no claiming, no waiting.
+      </p>
+      <p class="section-body" style="margin-top:1rem;">
+        Built on Swarms, powered by Solana, and backed by a community of holders who believe passive income should be simple, transparent, and unstoppable.
+      </p>
+    </div>
+    <div class="about-cards">
+      <div class="about-card">
+        <div class="about-card-icon">⚡</div>
+        <h3>Auto-Streaming Rewards</h3>
+        <p>No manual claiming. USDC flows to your wallet every 5 minutes while you hold.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-card-icon">🔗</div>
+        <h3>Fully On-Chain</h3>
+        <p>Every distribution is verifiable on Solana. No middlemen, no trust required.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-card-icon">💎</div>
+        <h3>Hold & Earn</h3>
+        <p>The longer you hold, the more you earn. Every trade by anyone works for you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<div class="hiw-full" id="how">
+  <div class="section-label">How It Works</div>
+  <h2 class="section-title">Simple as <span class="accent">1, 2, 3, 4</span></h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Buy $PASSIVESOL</h3>
+      <p>Purchase $PASSIVESOL on any Solana DEX. Any amount qualifies for rewards proportional to your holdings.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>Hold in your wallet</h3>
+      <p>No staking or locking required. Just keep $PASSIVESOL in your Solana wallet and you're eligible.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Trading generates fees</h3>
+      <p>Every buy and sell of $PASSIVESOL generates a fixed fee percentage that goes into the reward pool.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h3>USDC hits your wallet</h3>
+      <p>Every 5 minutes, the pool is converted to $USDC and distributed on-chain to all holders automatically.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- TOKENOMICS -->
+<div class="tokenomics-full" id="tokenomics">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="section-label">Tokenomics</div>
+    <h2 class="section-title">Built for <span class="accent">Holders</span></h2>
+    <div class="tokenomics-grid">
+      <div>
+        <table class="token-table">
+          <tr><td>Token Name</td><td>PassiveSOL</td></tr>
+          <tr><td>Ticker</td><td>$PASSIVESOL</td></tr>
+          <tr><td>Network</td><td>Solana (SPL)</td></tr>
+          <tr><td>Total Supply</td><td>1,000,000,000</td></tr>
+          <tr><td>Reward Token</td><td>USDC</td></tr>
+          <tr><td>Payout Interval</td><td>Every ~5 minutes</td></tr>
+          <tr><td>Buy Tax</td><td>5%</td></tr>
+          <tr><td>Sell Tax</td><td>5%</td></tr>
+        </table>
+      </div>
+      <div>
+        <p style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--red);text-transform:uppercase;margin-bottom:1.25rem;">Fee Distribution</p>
+        <div class="token-bar-container">
+          <div class="token-bar-item">
+            <div class="token-bar-label"><span>Holder USDC Rewards</span><span>60%</span></div>
+            <div class="token-bar-track"><div class="token-bar-fill" style="width:60%"></div></div>
+          </div>
+          <div class="token-bar-item">
+            <div class="token-bar-label"><span>Liquidity Pool</span><span>20%</span></div>
+            <div class="token-bar-track"><div class="token-bar-fill" style="width:20%;opacity:0.7"></div></div>
+          </div>
+          <div class="token-bar-item">
+            <div class="token-bar-label"><span>Marketing</span><span>15%</span></div>
+            <div class="token-bar-track"><div class="token-bar-fill" style="width:15%;opacity:0.5"></div></div>
+          </div>
+          <div class="token-bar-item">
+            <div class="token-bar-label"><span>Dev</span><span>5%</span></div>
+            <div class="token-bar-track"><div class="token-bar-fill" style="width:5%;opacity:0.3"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- APP SECTION -->
+<div class="app-section" id="app">
+  <div class="section-label">Dashboard</div>
+  <h2 class="section-title">Your <span class="accent">PassiveSOL</span> App</h2>
+
+  <div class="app-mockup">
+    <!-- APP NAV -->
+    <div class="app-nav">
+      <div class="app-nav-logo">
+        <div class="mini-icon">
+          <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
+            <rect width="28" height="28" rx="6" fill="#FF0000"/>
+            <text x="2" y="20" font-family="Arial Black,Arial" font-weight="900" font-size="14" fill="white" letter-spacing="-0.5">PS</text>
+          </svg>
+        </div>
+        <span>Passive<span style="color:var(--red)">SOL</span></span>
+      </div>
+      <div class="app-nav-tabs">
+        <div class="app-nav-tab active">Dashboard</div>
+        <div class="app-nav-tab">Stats</div>
+        <div class="app-nav-tab">PassiveSOL API</div>
+        <div class="app-nav-tab">Stake</div>
+        <div class="app-nav-tab" onclick="window.open('https://swarms.world/launch','_blank')" style="cursor:pointer;">↗ Site</div>
+      </div>
+      <div class="app-nav-right">
+        <span class="app-token-display">$PASSIVESOL $0.0000</span>
+        <button class="app-connect-btn">Connect wallet</button>
+      </div>
+    </div>
+
+    <!-- APP BODY -->
+    <div class="app-body">
+      <div class="app-dashboard-center">
+        <div class="app-asterisk">✳</div>
+        <div class="app-dashboard-title">Your Dashboard</div>
+        <p class="app-dashboard-desc">
+          Connect a Solana wallet to see your $PASSIVESOL balance, USDC rewards,
+          PassiveStake tier and PassiveSOL API budget — all in one place. Read-only.
+        </p>
+        <button class="app-connect-btn" style="padding:12px 28px;font-size:11px;clip-path:polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);margin-bottom:1rem;">Connect wallet</button>
+        <input type="text" class="app-wallet-input" placeholder="...or check any wallet by address">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="logo-text">Passive<span style="color:var(--red)">SOL</span></span>
+  <span class="footer-right">Built on Solana · Powered by Swarms · $PASSIVESOL</span>
+</footer>
+
+<!-- TEASER MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal').classList.remove('open')">✕</button>
+    <div class="modal-icon">✳</div>
+    <div class="modal-title">App Launching Soon</div>
+    <p class="modal-desc">
+      The <strong>PassiveSOL dashboard</strong> is almost ready.<br>
+      Follow us on X to be the first to know when it goes live — and to get in early on <strong>$PASSIVESOL</strong> rewards.
+    </p>
+    <a href="https://x.com/passivesol" target="_blank" class="modal-x-btn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.736l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      Follow @PASSIVESOL
+    </a>
+    <p class="modal-note">Launch incoming · Stay tuned</p>
+  </div>
+</div>
+
+<script>
+  function openModal() {
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById('modal')) {
+      document.getElementById('modal').classList.remove('open');
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.getElementById('modal').classList.remove('open');
+  });
+
+  // Wire all launch app buttons and connect buttons to modal
+  document.querySelectorAll('.btn-launch, .app-connect-btn, .btn-primary[href="#app"]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.preventDefault();
+      openModal();
+    });
+  });
+
+  function copyCA() {
+    const addr = document.getElementById('ca-addr').textContent;
+    navigator.clipboard.writeText(addr).then(() => {
+      const btn = document.querySelector('.ca-copy');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  // App tab switching
+  document.querySelectorAll('.app-nav-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.app-nav-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
